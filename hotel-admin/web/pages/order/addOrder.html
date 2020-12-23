@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>无标题文档</title>
+<link href="/hotel-admin/static/css/style.css" rel="stylesheet" type="text/css" />
+<link href="/hotel-admin/static/css/select.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/hotel-admin/static/js/jquery.js"></script>
+<script type="text/javascript" src="/hotel-admin/static/js/jquery.idTabs.min.js"></script>
+<script type="text/javascript" src="/hotel-admin/static/js/select-ui.min.js"></script>
+<script type="text/javascript" src="/hotel-admin/static/editor/kindeditor.js"></script>
+<script type="text/javascript" src="/hotel-admin/static/js/laydate/laydate.js"></script>
+<script type="text/javascript">
+    KE.show({
+        id : 'content7',
+        cssPath : './index.css'
+    });
+  </script>
+  <!-- 引入处理json自定义工具 -->
+  <script type="text/javascript" src="/hotel-admin/static/js/jsonHandler.js"></script>
+  <!-- 引入vue -->
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+<script type="text/javascript">
+
+
+
+$(document).ready(function(e) {
+    $(".select1").uedSelect({
+		width : 345			  
+	});
+	$(".select2").uedSelect({
+		width : 167  
+	});
+	$(".select3").uedSelect({
+		width : 100
+	});
+	
+	
+	
+});
+
+
+</script>
+
+
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="#">首页</a></li>
+    <li><a href="#">入住信息管理</a></li>
+    <li><a href="#">添加入住信息</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>入住信息</span></div>
+  <div id="usual1" class="usual">
+    <div id="tab1" class="tabson">
+      <form id="fm1">
+        <ul class="forminfo">
+          <li>
+            <label>房间号<b>*</b></label>
+            <div class="vocation">
+              <select class="select1" name="roomId">
+                <option>--请选择--</option>
+                <option :value="room.id" v-for="room in yzRoomList">{{room.room_num}}</option>
+              </select>
+            </div>
+          </li>
+          <br />
+          <br />
+          <br />
+          <br />
+          <li>
+            <label >消费金额<b>*</b></label>
+            <div class="vocation">
+              <input name="orderMoney" type="text" class="dfinput" style="width:344px;"/>
+            </div>
+          </li>
+          <br />
+          <li>
+            <cite>
+              <label>是否支付<b>*</b></label>
+              <input name="orderStatus" type="radio" value="0" checked="checked"/>
+              未支付&nbsp;&nbsp;&nbsp;&nbsp;
+              <input name="orderStatus" type="radio" value="1" />已支付</cite>
+          </li>
+          <br />
+          <li>
+            <label  >备注<b>*</b></label>
+            <div class="vocation">
+              <textarea class="dfinput" name="remark"></textarea>
+            </div>
+          </li>
+          <br />
+          <li>
+            <label>&nbsp;</label>
+            <input type="button" class="btn" @click="addInfo" value="添加"/>
+          </li>
+        </ul>
+      </form>
+    </div>
+  </div>
+  <script type="text/javascript"> 
+  
+      $("#usual1 ul").idTabs(); 
+    </script> 
+  <script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+	
+	!function(){
+laydate.skin('qianhuang');
+laydate({elem: '#Calendar'});
+laydate.skin('qianhuang');
+laydate({elem: '#Calendar2'});
+}();
+$(function dd(){
+		var d=new Date(),str="";
+		str+=(d.getFullYear()+"-");
+		str+="0";
+		str+=(d.getMonth()+1+"-");
+		str+=d.getDate();
+		$("#Calendar").attr("value",str);
+		$("#Calendar2").attr("value",str);
+	});
+
+	</script>
+
+  <script type="text/javascript">
+    const vue1 = new Vue({
+      el:"#tab1",
+      data:{
+        yzRoomList:[]
+      },
+      methods:{
+        addInfo(){
+          var jsonData = jQuery("#fm1").serializeObject();
+          jQuery(".btn").attr("disabled","disabled").css({"background":"#ccc"});
+          this.$http.post("/hotel-admin/addOrder.do",jsonData,{emulateJSON:true}).then(
+                  function(rs){
+                    var flag = rs.body;
+                    console.log(flag)
+                    if(flag){
+                      window.location.href="/hotel-admin/pages/bill/showCost.html";
+                    }else {
+                      window.location.href="/hotel-admin/pages/order/addOrder.html";
+                    }
+                  },
+                  function(err){
+                    window.alert("请求数据失败，请您重试");
+                  }
+          );
+        }
+      },
+      mounted(){
+        this.$http.post("/hotel-admin/getYZRoom.do").then(
+                function(rs){
+                  console.log(rs)
+                  this.yzRoomList=rs.body;
+                },
+                function(err){
+                  window.alert("请求数据失败，请您重试");
+                }
+        );
+      }
+    });
+  </script>
+</div>
+</body>
+</html>

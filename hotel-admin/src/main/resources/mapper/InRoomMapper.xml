@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.InRoomMapper">
+
+    <select id="selectInRoomInfo" resultType="map" parameterType="map">
+        SELECT iri.id,iri.out_room_status ,rm.room_num,rt.room_type_name,iri.customer_name,iri.gender
+        ,iri.phone,iri.money,iri.idcard,iri.create_date
+        FROM in_room_info iri INNER JOIN rooms  rm ON iri.room_id = rm.id
+        INNER JOIN room_type rt ON rt.id=rm.room_type_id  WHERE iri.status='1'
+        <if test="roomNum!=null and roomNum != ''">
+            and rm.room_num = #{roomNum}
+        </if>
+        <if test="phone!=null and phone != ''">
+            and iri.phone = #{phone}
+        </if>
+    </select>
+
+    <insert id="insertInRoomInfo" parameterType="com.pojo.InRoomInfo">
+        insert into in_room_info values(null,#{customerName},#{gender},
+        #{idcard},#{phone},#{money},#{createDate},#{roomId},'1','0')
+    </insert>
+
+    <select id="selectOutRoomInfoByRoomId" resultType="Map" parameterType="Long">
+		SELECT iri.id AS iriId,iri.customer_name,rt.room_price,iri.money,
+		DATE_FORMAT(iri.create_date,'%Y-%m-%d %H:%i:%S') AS create_date,
+		tp.orderMoney,rt.room_type_name FROM in_room_info iri INNER JOIN rooms rm
+		ON iri.`room_id`=rm.id  INNER JOIN room_type rt ON
+		rm.`room_type_id`=rt.id  LEFT JOIN
+		(SELECT SUM(order_money) AS orderMoney,iri.`id`
+		FROM in_room_info iri INNER JOIN orders od ON iri.id=od.iri_id
+		AND od.`order_status`='0') tp ON tp.id=iri.id
+		WHERE room_id=#{0} AND iri.out_room_status='0'
+	</select>
+
+    <!-- 查询消费记录，同时包括条件查询 -->
+    <select id="selectCost" resultType="Map" parameterType="Map">
+        SELECT iri.customer_name,iri.gender,iri.idcard,iri.phone,rm.room_num,od.order_num
+        ,od.order_money,DATE_FORMAT(od.create_date,'%Y-%m-%d %H:%i:%S') AS create_date,od.order_status
+        FROM orders od INNER JOIN in_room_info iri ON od.iri_id=iri.id
+        INNER JOIN rooms rm ON rm.id=iri.room_id
+        <where>
+            <if test="customerName!=null and customerName!=''">
+                iri.customer_name=#{customerName}
+            </if>
+            <if test="idcard!=null and idcard!=''">
+                iri.idcard=#{idcard}
+            </if>
+            <if test="phone!=null and phone!=''">
+                iri.phone=#{phone}
+            </if>
+        </where>
+    </select>
+</mapper>
